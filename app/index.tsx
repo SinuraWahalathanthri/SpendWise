@@ -54,12 +54,12 @@ export default function Index() {
           </Text>
 
           <View style={{ marginTop: 20 }}>
-            <Link href={"/register"} asChild>
+            <Link href={"/(auth)/register"} asChild>
               <TouchableOpacity style={styles.createButton}>
                 <Text style={styles.createText}>Create Wallet</Text>
               </TouchableOpacity>
             </Link>
-            <Link href={"/login"} asChild>
+            <Link href={"/(auth)/login"} asChild>
               <TouchableOpacity style={styles.button}>
                 <Text style={styles.text}>I have an account</Text>
               </TouchableOpacity>
