@@ -10,6 +10,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { closeConnection, connectWebSocket } from "@/services/socketServices";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("income");
@@ -44,34 +45,41 @@ const Home = () => {
     (item) => item.type === activeTab,
   );
 
-  // Fetch balances from backend
-const fetchBalances = async () => {
-  try {
-    const userData = await AsyncStorage.getItem("user");
-    if (!userData) return;
+  const fetchBalances = async (userId: number) => {
+    try {
+      const response = await fetch(
+        `http://10.0.2.2:8080/spendwise/api/transactions/balances/${userId}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch balances");
 
-    const user = JSON.parse(userData); // parse stored JSON
-    const userId = user.id; // or user.userId, depending on your backend
-
-    const response = await fetch(
-      `http://10.0.2.2:8080/spendwise/api/transactions/balances/${userId}`,
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setBalances(data);
+    } catch (err) {
+      console.error(err);
     }
+  };
 
-    const data = await response.json();
-    setBalances(data);
-  } catch (error) {
-    console.error("Failed to fetch balances:", error);
-  }
-};
-
-
-  // Fetch balances on mount
   useEffect(() => {
-    fetchBalances();
+    const init = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (!userData) return;
+
+      const user = JSON.parse(userData);
+
+      // 1️⃣ Fetch initial balances
+      await fetchBalances(user.id);
+
+      // 2️⃣ Connect WebSocket for live updates
+      connectWebSocket(user.id, (data) => {
+        setBalances(data);
+      });
+    };
+
+    init();
+
+    return () => {
+      closeConnection();
+    };
   }, []);
 
   return (

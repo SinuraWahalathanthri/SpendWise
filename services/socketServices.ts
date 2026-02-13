@@ -1,22 +1,27 @@
 let socket: WebSocket | null = null;
 
-export const connectWebSocket = (onMessage: (data: string) => void): void => {
-  socket = new WebSocket("ws://10.0.2.2:8080/api/ws/practical");
+export const connectWebSocket = (
+  userId: number,
+  onMessage: (data: any) => void,
+): void => {
+socket = new WebSocket(`ws://10.0.2.2:8080/spendwise/ws/balance/${userId}`);
+
 
   socket.onopen = () => {
-    console.log("WebSocket connection established");
+    console.log("WebSocket connected");
   };
 
   socket.onmessage = (event) => {
-    onMessage(String(event.data));
-  };
-
-  socket.onclose = () => {
-    console.log("WebSocket connection closed");
+    const parsed = JSON.parse(event.data);
+    onMessage(parsed);
   };
 
   socket.onerror = (error) => {
     console.error("WebSocket error", error);
+  };
+
+  socket.onclose = () => {
+    console.log("WebSocket closed");
   };
 };
 
