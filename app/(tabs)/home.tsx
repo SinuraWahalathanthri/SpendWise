@@ -16,34 +16,13 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState("income");
   const [balances, setBalances] = useState({ totalBalance: 0, wallets: {} });
 
-  const transactions = [
-    { id: "1", title: "Salary", amount: 50000, type: "income", date: "Today" },
-    {
-      id: "2",
-      title: "Groceries",
-      amount: 2500,
-      type: "expense",
-      date: "Yesterday",
-    },
-    {
-      id: "3",
-      title: "Freelance",
-      amount: 12000,
-      type: "income",
-      date: "2 days ago",
-    },
-    {
-      id: "4",
-      title: "Electricity Bill",
-      amount: 3200,
-      type: "expense",
-      date: "3 days ago",
-    },
-  ];
+  const [transactions, setTransactions] = useState<any[]>([]);
 
-  const filteredTransactions = transactions.filter(
-    (item) => item.type === activeTab,
-  );
+  const filteredTransactions = transactions
+    .filter((item) => item.type?.toLowerCase() === activeTab)
+    .sort((a, b) => {
+      return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
+    });
 
   const fetchBalances = async (userId: number) => {
     try {
@@ -58,6 +37,30 @@ const Home = () => {
       console.error(err);
     }
   };
+  const fetchTransactions = async (userId: number) => {
+    try {
+      const response = await fetch(
+        `http://10.0.2.2:8080/spendwise/api/transactions/recent/${userId}`,
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch transactions");
+
+      const data = await response.json();
+
+      const formatted = data.map((item: any) => ({
+        id: item.id.toString(),
+        title: item.category,
+        amount: Number(item.amount),
+        type: item.transactionType,
+        rawDate: item.transactionDate,
+        date: new Date(item.transactionDate).toLocaleDateString(),
+      }));
+
+      setTransactions(formatted);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -66,12 +69,33 @@ const Home = () => {
 
       const user = JSON.parse(userData);
 
-      // 1️⃣ Fetch initial balances
+      // 1️⃣ Fetch balances
       await fetchBalances(user.id);
 
-      // 2️⃣ Connect WebSocket for live updates
+      // 2️⃣ Fetch transactions (🔥 ADD THIS)
+      await fetchTransactions(user.id);
+
+      // 3️⃣ Connect WebSocket
       connectWebSocket(user.id, (data) => {
-        setBalances(data);
+        if (data.type === "update") {
+          setBalances({
+            totalBalance: data.totalBalance,
+            wallets: data.wallets,
+          });
+
+          const formatted = data.transactions.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.title || item.category,
+            amount: Number(item.amount),
+            type: item.type || item.transactionType,
+            rawDate: item.date || item.transactionDate,
+            date: new Date(
+              item.date || item.transactionDate,
+            ).toLocaleDateString(),
+          }));
+
+          setTransactions(formatted);
+        }
       });
     };
 
