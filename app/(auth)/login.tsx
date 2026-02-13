@@ -59,7 +59,7 @@ const Login = () => {
       if (response.ok) {
         // Save user info to AsyncStorage
         await AsyncStorage.setItem("user", JSON.stringify(data));
-        Alert.alert("Success", "Logged in successfully!"+data);
+        Alert.alert("Success", "Logged in successfully!");
         router.replace("/(tabs)/home");
       } else {
         Alert.alert("Error", data.message || "Login failed");

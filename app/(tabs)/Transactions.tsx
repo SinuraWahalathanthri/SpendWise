@@ -8,6 +8,8 @@ import {
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { closeConnection, connectWebSocket } from "@/services/socketServices";
 
 const Transactions = () => {
   const [activeTab, setActiveTab] = useState("income");
@@ -45,15 +47,46 @@ const Transactions = () => {
   };
 
   useEffect(() => {
-    const init = async () => {
-      const userData = await AsyncStorage.getItem("user");
-      if (!userData) return;
+    let userId = null;
 
-      const user = JSON.parse(userData);
-      await fetchTransactions(user.id);
+    const init = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("user");
+        if (!userData) return;
+
+        const user = JSON.parse(userData);
+        userId = user.id;
+
+        // initial fetch
+        await fetchTransactions(userId);
+
+        // connect websocket
+        connectWebSocket(userId, (data) => {
+          if (data.type === "update") {
+            const formatted = data.transactions.map((item: any) => ({
+              id: item.id.toString(),
+              title: item.title || item.category,
+              amount: Number(item.amount),
+              type: (item.type || item.transactionType)?.toLowerCase(),
+              rawDate: item.date || item.transactionDate,
+              date: new Date(
+                item.date || item.transactionDate,
+              ).toLocaleDateString(),
+            }));
+
+            setTransactions(formatted);
+          }
+        });
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     init();
+
+    return () => {
+      closeConnection();
+    };
   }, []);
 
   return (
@@ -127,7 +160,19 @@ const Transactions = () => {
             </View>
           )}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No transactions found</Text>
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons
+                name="file-document-outline"
+                size={60}
+                color="#ccc"
+              />
+
+              <Text style={styles.emptyTitle}>No transaction history</Text>
+
+              <Text style={styles.emptySubtitle}>
+                You don't have any {activeTab} transactions yet
+              </Text>
+            </View>
           }
         />
       </SafeAreaView>
@@ -218,5 +263,25 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 40,
     color: "#999",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
+    paddingHorizontal: 20,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#666",
+    marginTop: 10,
+  },
+
+  emptySubtitle: {
+    fontSize: 14,
+    color: "#999",
+    marginTop: 5,
+    textAlign: "center",
   },
 });

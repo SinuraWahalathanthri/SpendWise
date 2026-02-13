@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import {
   StyleSheet,
   Text,
@@ -11,7 +13,67 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const Account = () => {
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+  });
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load user
+        const userData = await AsyncStorage.getItem("user");
+
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+
+          setUser({
+            name: parsedUser.name,
+            email: parsedUser.email,
+          });
+        }
+
+        // Load dark mode preference
+        const darkModeValue = await AsyncStorage.getItem("darkMode");
+
+        if (darkModeValue !== null) {
+          setIsDarkMode(JSON.parse(darkModeValue));
+        }
+      } catch (error) {
+        console.error("Failed to load data", error);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const toggleDarkMode = async (value) => {
+    try {
+      setIsDarkMode(value);
+
+      await AsyncStorage.setItem("darkMode", JSON.stringify(value));
+    } catch (error) {
+      console.error("Failed to save dark mode", error);
+    }
+  };
+
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("user");
+
+      // optional: clear everything
+      // await AsyncStorage.clear();
+
+      router.replace("/login");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+
+
   return (
     <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -26,8 +88,11 @@ const Account = () => {
                 <MaterialCommunityIcons name="account" size={32} color="#fff" />
               </View>
               <View>
-                <Text style={styles.profileName}>Sinura</Text>
-                <Text style={styles.profileEmail}>sinura@email.com</Text>
+                <Text style={styles.profileName}>{user.name || "User"}</Text>
+
+                <Text style={styles.profileEmail}>
+                  {user.email || "email@example.com"}
+                </Text>
               </View>
             </View>
           </View>
@@ -58,7 +123,7 @@ const Account = () => {
 
               <Switch
                 value={isDarkMode}
-                onValueChange={setIsDarkMode}
+                onValueChange={toggleDarkMode}
                 trackColor={{ false: "#ccc", true: "#4CAF50" }}
                 thumbColor="#fff"
               />
@@ -76,7 +141,7 @@ const Account = () => {
           </View>
 
           {/* Logout Button */}
-          <TouchableOpacity style={styles.logoutButton}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <MaterialCommunityIcons name="logout" size={20} color="#FF5252" />
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>

@@ -15,6 +15,7 @@ import { closeConnection, connectWebSocket } from "@/services/socketServices";
 const Home = () => {
   const [activeTab, setActiveTab] = useState("income");
   const [balances, setBalances] = useState({ totalBalance: 0, wallets: {} });
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
   const [transactions, setTransactions] = useState<any[]>([]);
 
@@ -69,13 +70,16 @@ const Home = () => {
 
       const user = JSON.parse(userData);
 
-      // 1️⃣ Fetch balances
-      await fetchBalances(user.id);
+      // load balance visibility preference
+      const visibility = await AsyncStorage.getItem("balanceVisible");
 
-      // 2️⃣ Fetch transactions (🔥 ADD THIS)
+      if (visibility !== null) {
+        setIsBalanceVisible(JSON.parse(visibility));
+      }
+
+      await fetchBalances(user.id);
       await fetchTransactions(user.id);
 
-      // 3️⃣ Connect WebSocket
       connectWebSocket(user.id, (data) => {
         if (data.type === "update") {
           setBalances({
@@ -101,10 +105,17 @@ const Home = () => {
 
     init();
 
-    return () => {
-      closeConnection();
-    };
+    return () => closeConnection();
   }, []);
+
+  const toggleBalanceVisibility = async () => {
+    const newValue = !isBalanceVisible;
+
+    setIsBalanceVisible(newValue);
+
+    await AsyncStorage.setItem("balanceVisible", JSON.stringify(newValue));
+  };
+
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
@@ -120,13 +131,19 @@ const Home = () => {
                 <View style={styles.balanceContainer}>
                   <View style={styles.balanceHeader}>
                     <Text style={styles.balanceAmount}>
-                      Rs {balances.totalBalance?.toLocaleString() || "0.00"}
+                      {isBalanceVisible
+                        ? `Rs ${balances.totalBalance?.toLocaleString() || "0.00"}`
+                        : "Rs ••••••"}
                     </Text>
-                    <MaterialCommunityIcons
-                      name="eye-outline"
-                      size={24}
-                      color="#333"
-                    />
+                    <TouchableOpacity onPress={toggleBalanceVisibility}>
+                      <MaterialCommunityIcons
+                        name={
+                          isBalanceVisible ? "eye-outline" : "eye-off-outline"
+                        }
+                        size={24}
+                        color="#333"
+                      />
+                    </TouchableOpacity>
                   </View>
                   <View style={styles.totalBalanceRow}>
                     <Text style={styles.totalBalanceText}>Total balance</Text>
@@ -263,6 +280,21 @@ const Home = () => {
               </Text>
             </View>
           )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons
+                name="file-document-outline"
+                size={60}
+                color="#ccc"
+              />
+
+              <Text style={styles.emptyTitle}>No transaction history</Text>
+
+              <Text style={styles.emptySubtitle}>
+                You don't have any {activeTab} transactions yet
+              </Text>
+            </View>
+          }
         />
       </SafeAreaView>
     </View>
@@ -626,5 +658,26 @@ const styles = StyleSheet.create({
 
   expenseText: {
     color: "#FF5252",
+  },
+
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
+    paddingHorizontal: 20,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#666",
+    marginTop: 10,
+  },
+
+  emptySubtitle: {
+    fontSize: 14,
+    color: "#999",
+    marginTop: 5,
+    textAlign: "center",
   },
 });
