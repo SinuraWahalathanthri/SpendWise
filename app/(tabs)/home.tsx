@@ -3,16 +3,17 @@ import {
   Text,
   View,
   TouchableOpacity,
-  ScrollView,
   FlatList,
 } from "react-native";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("income");
+  const [balances, setBalances] = useState({ totalBalance: 0, wallets: {} });
 
   const transactions = [
     { id: "1", title: "Salary", amount: 50000, type: "income", date: "Today" },
@@ -43,6 +44,36 @@ const Home = () => {
     (item) => item.type === activeTab,
   );
 
+  // Fetch balances from backend
+const fetchBalances = async () => {
+  try {
+    const userData = await AsyncStorage.getItem("user");
+    if (!userData) return;
+
+    const user = JSON.parse(userData); // parse stored JSON
+    const userId = user.id; // or user.userId, depending on your backend
+
+    const response = await fetch(
+      `http://10.0.2.2:8080/spendwise/api/transactions/balances/${userId}`,
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    setBalances(data);
+  } catch (error) {
+    console.error("Failed to fetch balances:", error);
+  }
+};
+
+
+  // Fetch balances on mount
+  useEffect(() => {
+    fetchBalances();
+  }, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -56,7 +87,9 @@ const Home = () => {
               <View style={styles.header}>
                 <View style={styles.balanceContainer}>
                   <View style={styles.balanceHeader}>
-                    <Text style={styles.balanceAmount}>Rs 23,220.00</Text>
+                    <Text style={styles.balanceAmount}>
+                      Rs {balances.totalBalance?.toLocaleString() || "0.00"}
+                    </Text>
                     <MaterialCommunityIcons
                       name="eye-outline"
                       size={24}
@@ -100,6 +133,7 @@ const Home = () => {
                   </TouchableOpacity>
                 </View>
 
+                {/* Cash Wallet */}
                 <View style={styles.walletItem}>
                   <View style={styles.walletLeft}>
                     <View style={styles.walletIcon}>
@@ -111,7 +145,26 @@ const Home = () => {
                     </View>
                     <Text style={styles.walletName}>Cash</Text>
                   </View>
-                  <Text style={styles.walletAmount}>-Rs 23,220.00</Text>
+                  <Text style={styles.walletAmount}>
+                    Rs {balances.wallets?.Cash?.toLocaleString() || "0.00"}
+                  </Text>
+                </View>
+
+                {/* Card Wallet */}
+                <View style={[styles.walletItem, { marginTop: 10 }]}>
+                  <View style={styles.walletLeft}>
+                    <View style={styles.walletIcon}>
+                      <MaterialCommunityIcons
+                        name="credit-card-outline"
+                        size={24}
+                        color="#fff"
+                      />
+                    </View>
+                    <Text style={styles.walletName}>Card</Text>
+                  </View>
+                  <Text style={styles.walletAmount}>
+                    Rs {balances.wallets?.Card?.toLocaleString() || "0.00"}
+                  </Text>
                 </View>
               </View>
 
@@ -173,7 +226,8 @@ const Home = () => {
                     : styles.expenseText,
                 ]}
               >
-                {item.type === "income" ? "+" : "-"} Rs {item.amount}
+                {item.type === "income" ? "+" : "-"} Rs{" "}
+                {item.amount.toLocaleString()}
               </Text>
             </View>
           )}

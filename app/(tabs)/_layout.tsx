@@ -16,11 +16,12 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { HapticTab } from "@/components/haptic-tab";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AddTransactionButton = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<
-    "expense" | "income" | "debt"
+    "expense" | "income"
   >("expense");
   const [amount, setAmount] = useState("0");
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -74,6 +75,35 @@ const AddTransactionButton = () => {
       .replace(/\//g, "/");
     return `${dayName}, ${formattedDate}`;
   };
+
+  const saveTransaction = async () => {
+    const userData = await AsyncStorage.getItem("user");
+    if (!userData) return;
+    
+    const user = JSON.parse(userData);
+    const payload = {
+      transactionType,
+      wallet,
+      category: category?.name,
+      amount: parseFloat(amount),
+      note,
+      transactionDate: selectedDate,
+      userId: user.id,
+    };
+
+    fetch("http://10.0.2.2:8080/spendwise/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Transaction saved:", data);
+        setModalVisible(false);
+      })
+      .catch((err) => console.error(err));
+  };
+
 
   return (
     <>
@@ -140,22 +170,6 @@ const AddTransactionButton = () => {
                     ]}
                   >
                     Income
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.typeButton,
-                    transactionType === "debt" && styles.typeButtonActive,
-                  ]}
-                  onPress={() => setTransactionType("debt")}
-                >
-                  <Text
-                    style={[
-                      styles.typeButtonText,
-                      transactionType === "debt" && styles.typeButtonTextActive,
-                    ]}
-                  >
-                    Debt/Loan
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -353,7 +367,7 @@ const AddTransactionButton = () => {
               )}
 
               {/* Save Button */}
-              <TouchableOpacity style={styles.saveButton}>
+              <TouchableOpacity style={styles.saveButton} onPress={saveTransaction}>
                 <Text style={styles.saveButtonText}>Save</Text>
               </TouchableOpacity>
             </ScrollView>
