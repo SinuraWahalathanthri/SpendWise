@@ -11,6 +11,7 @@ import {
   ScrollView,
   Pressable,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { Colors } from "@/constants/theme";
@@ -23,6 +24,27 @@ const AddTransactionButton = () => {
   >("expense");
   const [amount, setAmount] = useState("0");
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const [wallet, setWallet] = useState("Cash");
+  const [walletDropdownVisible, setWalletDropdownVisible] = useState(false);
+
+  const [category, setCategory] = useState<any>(null);
+  const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
+
+  const [note, setNote] = useState("");
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+
+  const categories = [
+    { name: "Food", icon: "silverware-fork-knife", color: "#FF5722" },
+    { name: "Transport", icon: "car", color: "#2196F3" },
+    { name: "Shopping", icon: "shopping", color: "#9C27B0" },
+    { name: "Bills", icon: "file-document", color: "#FF9800" },
+    { name: "Salary", icon: "cash", color: "#4CAF50" },
+  ];
+
+
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -139,21 +161,54 @@ const AddTransactionButton = () => {
               </View>
 
               {/* Wallet Selection */}
-              <TouchableOpacity style={styles.inputRow}>
-                <View style={styles.walletIconSmall}>
+              {/* Wallet Selection */}
+              <View>
+                <TouchableOpacity
+                  style={styles.inputRow}
+                  onPress={() =>
+                    setWalletDropdownVisible(!walletDropdownVisible)
+                  }
+                >
+                  <View style={styles.walletIconSmall}>
+                    <MaterialCommunityIcons
+                      name={wallet === "Cash" ? "cash" : "credit-card"}
+                      size={18}
+                      color="#fff"
+                    />
+                  </View>
+
+                  <Text style={styles.inputLabel}>{wallet}</Text>
+
                   <MaterialCommunityIcons
-                    name="wallet"
-                    size={20}
-                    color="#fff"
+                    name={walletDropdownVisible ? "chevron-up" : "chevron-down"}
+                    size={24}
+                    color="#999"
                   />
-                </View>
-                <Text style={styles.inputLabel}>Cash</Text>
-                <MaterialCommunityIcons
-                  name="chevron-right"
-                  size={24}
-                  color="#999"
-                />
-              </TouchableOpacity>
+                </TouchableOpacity>
+
+                {walletDropdownVisible && (
+                  <View style={styles.dropdown}>
+                    {["Cash", "Card"].map((item) => (
+                      <TouchableOpacity
+                        key={item}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setWallet(item);
+                          setWalletDropdownVisible(false);
+                        }}
+                      >
+                        <MaterialCommunityIcons
+                          name={item === "Cash" ? "cash" : "credit-card"}
+                          size={20}
+                          color="#4CAF50"
+                        />
+
+                        <Text style={styles.dropdownText}>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
 
               {/* Amount Input */}
               <View style={styles.amountContainer}>
@@ -169,63 +224,133 @@ const AddTransactionButton = () => {
               </View>
 
               {/* Category Selection */}
-              <TouchableOpacity style={styles.inputRow}>
-                <View style={styles.categoryIcon} />
-                <Text style={styles.placeholderText}>Select category</Text>
-                <MaterialCommunityIcons
-                  name="chevron-right"
-                  size={24}
-                  color="#999"
-                />
-              </TouchableOpacity>
+              {/* Category Selection */}
+              <View>
+                <TouchableOpacity
+                  style={styles.inputRow}
+                  onPress={() =>
+                    setCategoryDropdownVisible(!categoryDropdownVisible)
+                  }
+                >
+                  <View
+                    style={[
+                      styles.categoryIcon,
+                      {
+                        backgroundColor: category ? category.color : "#F3F4F6",
+                      },
+                    ]}
+                  >
+                    {category && (
+                      <MaterialCommunityIcons
+                        name={category.icon}
+                        size={18}
+                        color="#fff"
+                      />
+                    )}
+                  </View>
+
+                  <Text
+                    style={
+                      category ? styles.inputLabel : styles.placeholderText
+                    }
+                  >
+                    {category ? category.name : "Select category"}
+                  </Text>
+
+                  <MaterialCommunityIcons
+                    name={
+                      categoryDropdownVisible ? "chevron-up" : "chevron-down"
+                    }
+                    size={24}
+                    color="#999"
+                  />
+                </TouchableOpacity>
+
+                {categoryDropdownVisible && (
+                  <View style={styles.dropdown}>
+                    {categories.map((cat) => (
+                      <TouchableOpacity
+                        key={cat.name}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setCategory(cat);
+                          setCategoryDropdownVisible(false);
+                        }}
+                      >
+                        <View
+                          style={[
+                            styles.categoryIcon,
+                            { backgroundColor: cat.color },
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name={cat.icon}
+                            size={16}
+                            color="#fff"
+                          />
+                        </View>
+
+                        <Text style={styles.dropdownText}>{cat.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
 
               {/* Note */}
-              <TouchableOpacity style={styles.inputRow}>
+              <View style={styles.noteContainer}>
                 <MaterialCommunityIcons
                   name="text-box-outline"
-                  size={24}
+                  size={22}
                   color="#666"
                 />
-                <Text style={styles.inputLabel}>Note</Text>
-                <MaterialCommunityIcons
-                  name="chevron-right"
-                  size={24}
-                  color="#999"
+
+                <TextInput
+                  style={styles.noteInput}
+                  placeholder="Add note..."
+                  placeholderTextColor="#999"
+                  value={note}
+                  onChangeText={setNote}
+                  multiline
                 />
-              </TouchableOpacity>
+              </View>
 
               {/* Date Selector */}
-              <View style={styles.dateContainer}>
+              {/* Date Selector */}
+              <TouchableOpacity
+                style={styles.dateContainer}
+                onPress={() => setShowDatePicker(true)}
+              >
                 <MaterialCommunityIcons
                   name="calendar-blank"
                   size={24}
                   color="#666"
                 />
+
                 <View style={styles.dateSelector}>
-                  <TouchableOpacity>
-                    <MaterialCommunityIcons
-                      name="chevron-left"
-                      size={24}
-                      color="#999"
-                    />
-                  </TouchableOpacity>
                   <Text style={styles.dateText}>
                     {formatDate(selectedDate)}
                   </Text>
-                  <TouchableOpacity>
-                    <MaterialCommunityIcons
-                      name="chevron-right"
-                      size={24}
-                      color="#999"
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
 
-              {/* Add More Details */}
-              <TouchableOpacity style={styles.addMoreButton}>
-                <Text style={styles.addMoreText}>Add more details</Text>
+                  <MaterialCommunityIcons
+                    name="chevron-down"
+                    size={22}
+                    color="#999"
+                  />
+                </View>
               </TouchableOpacity>
+
+              {showDatePicker && (
+                <DateTimePicker
+                  value={selectedDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, date) => {
+                    setShowDatePicker(false);
+                    if (date) setSelectedDate(date);
+                  }}
+                />
+              )}
 
               {/* Save Button */}
               <TouchableOpacity style={styles.saveButton}>
@@ -471,6 +596,8 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: "#F3F4F6",
+    alignItems:"center",
+    justifyContent:"center"
   },
 
   placeholderText: {
@@ -526,5 +653,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#FFFFFF",
     fontWeight: "600",
+  },
+  dropdown: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    marginTop: 6,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+
+  dropdownText: {
+    fontSize: 16,
+    color: "#111",
+  },
+
+  noteContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
+  },
+
+  noteInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#111",
+    minHeight: 60,
+    textAlignVertical: "top",
   },
 });

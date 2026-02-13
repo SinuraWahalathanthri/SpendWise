@@ -43,6 +43,49 @@ const Register = () => {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
 
+  const handleRegister = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://10.0.2.2:8080/spendwise/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const text = await response.text();
+      console.log("Server response raw:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text); // try parse JSON
+      } catch {
+        data = { message: text }; // fallback
+      }
+
+      if (response.status === 201) {
+        Alert.alert("Success", "Account created successfully!");
+        router.replace("/(auth)/login");
+      } else {
+        Alert.alert("Error", data.message || "Registration failed");
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Cannot connect to server");
+    }
+
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#ececee" }}>
       <SafeAreaView style={{ flex: 1, paddingHorizontal: 20 }}>
@@ -200,7 +243,10 @@ const Register = () => {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.createButton}>
+            <TouchableOpacity
+              style={styles.createButton}
+              onPress={handleRegister}
+            >
               <Text style={styles.createText}>Sign Up</Text>
             </TouchableOpacity>
             <View

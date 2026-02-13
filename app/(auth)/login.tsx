@@ -1,5 +1,4 @@
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,37 +10,65 @@ import {
   Alert,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { Link, router, Stack, useNavigation } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { StackScreen } from "react-native-screens";
-// import { useAuth } from "@/context/AuthContext";
-
-type Student = {
-  id: string;
-  name?: string;
-  email?: string;
-  status?: string;
-  password?: string;
-  nic?: string;
-  otpExpiry?: { toDate: () => Date };
-};
+import { router, Stack } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [nameFocused, setNameFocused] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
-  const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkLogin = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        // If user data exists, redirect to home
+        router.replace("/(tabs)/home");
+      }
+    };
+    checkLogin();
+  }, []);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://10.0.2.2:8080/spendwise/api/users/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Save user info to AsyncStorage
+        await AsyncStorage.setItem("user", JSON.stringify(data));
+        Alert.alert("Success", "Logged in successfully!"+data);
+        router.replace("/(tabs)/home");
+      } else {
+        Alert.alert("Error", data.message || "Login failed");
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Cannot connect to server");
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ececee" }}>
@@ -99,6 +126,7 @@ const Login = () => {
                     onBlur={() => setEmailFocused(false)}
                     value={email}
                     onChangeText={setEmail}
+                    keyboardType="email-address"
                   />
                 </View>
               </View>
@@ -115,7 +143,6 @@ const Login = () => {
                     size={20}
                     color="#818181"
                   />
-
                   <TextInput
                     style={styles.textInput}
                     placeholder="Enter password"
@@ -126,7 +153,6 @@ const Login = () => {
                     onFocus={() => setPasswordFocused(true)}
                     onBlur={() => setPasswordFocused(false)}
                   />
-
                   <Pressable onPress={() => setShowPassword(!showPassword)}>
                     <MaterialCommunityIcons
                       name={showPassword ? "eye-off-outline" : "eye-outline"}
@@ -138,12 +164,10 @@ const Login = () => {
               </View>
             </View>
 
-            <TouchableOpacity
-              style={styles.createButton}
-              onPress={() => router.replace("/(tabs)/home")}
-            >
+            <TouchableOpacity style={styles.createButton} onPress={handleLogin}>
               <Text style={styles.createText}>Sign In</Text>
             </TouchableOpacity>
+
             <View
               style={{
                 flexDirection: "row",
@@ -151,22 +175,15 @@ const Login = () => {
                 marginTop: 16,
               }}
             >
-              <Text style={styles.text}>Dont have an account?{"  "}</Text>
-
+              <Text style={styles.text}>Don't have an account?{"  "}</Text>
               <TouchableOpacity
                 onPress={() => router.replace("/(auth)/register")}
               >
-                <Text style={styles.signUpText}>Sign In</Text>
+                <Text style={styles.signUpText}>Sign Up</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            HDP I - HHDP I Assessment Submission
-          </Text>
-        </View>
       </SafeAreaView>
     </View>
   );
@@ -175,28 +192,7 @@ const Login = () => {
 export default Login;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#1f1f1f",
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    alignContent: "center",
-  },
-
-  signUpText: {
-    fontFamily: "LatoBold",
-    fontSize: 16,
-    lineHeight: 20,
-    color: "#000000",
-    textAlign: "center",
-    marginBottom: 18,
-    fontWeight: "bold",
-  },
-  title: {
-    fontSize: 35,
-    fontFamily: "InterBold",
-    color: "#000",
-  },
+  title: { fontSize: 35, fontFamily: "InterBold", color: "#000" },
   subTitle: {
     marginTop: 6,
     fontFamily: "Inter",
@@ -204,19 +200,8 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: "#000000",
   },
-  image: {
-    width: 300,
-    height: 300,
-    alignSelf: "center",
-    marginTop: 20,
-  },
-  inputContainer: {
-    marginTop: 15,
-  },
-
-  passwordContainer: {
-    marginTop: 15,
-  },
+  inputContainer: { marginTop: 15 },
+  passwordContainer: { marginTop: 15 },
   emailInputWrapper: {
     paddingHorizontal: 15,
     paddingVertical: 15,
@@ -248,9 +233,6 @@ const styles = StyleSheet.create({
     flex: 1,
     color: "#000",
   },
-  loginSection: {
-    marginTop: 45,
-  },
   createButton: {
     backgroundColor: "#030101",
     padding: 20,
@@ -259,18 +241,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  createText: {
-    color: "#fafafa",
-    fontFamily: "InterSemiBold",
-    fontSize: 14,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  createText: { color: "#fafafa", fontFamily: "InterSemiBold", fontSize: 14 },
   footerText: {
-    fontFamily: "LatoBold",
+    fontFamily: "InterBold",
     fontSize: 12,
     lineHeight: 20,
     color: "#424242",
@@ -278,15 +251,21 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   text: {
-    fontFamily: "LatoBold",
+    fontFamily: "InterSemiBold",
     fontSize: 16,
     lineHeight: 20,
-    color: "#424242",
+    color: "#616161",
     textAlign: "center",
     marginBottom: 18,
   },
-  focusedInput: {
-    borderColor: "#9ca78c",
-    borderWidth: 2,
+  focusedInput: { borderColor: "#9ca78c", borderWidth: 2 },
+  signUpText: {
+    fontFamily: "InterBold",
+    fontSize: 16,
+    lineHeight: 20,
+    color: "#000000",
+    textAlign: "center",
+    marginBottom: 18,
+    fontWeight: "bold",
   },
 });

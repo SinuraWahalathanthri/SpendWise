@@ -4,74 +4,180 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  FlatList,
 } from "react-native";
+
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const Home = () => {
+  const [activeTab, setActiveTab] = useState("income");
+
+  const transactions = [
+    { id: "1", title: "Salary", amount: 50000, type: "income", date: "Today" },
+    {
+      id: "2",
+      title: "Groceries",
+      amount: 2500,
+      type: "expense",
+      date: "Yesterday",
+    },
+    {
+      id: "3",
+      title: "Freelance",
+      amount: 12000,
+      type: "income",
+      date: "2 days ago",
+    },
+    {
+      id: "4",
+      title: "Electricity Bill",
+      amount: 3200,
+      type: "expense",
+      date: "3 days ago",
+    },
+  ];
+
+  const filteredTransactions = transactions.filter(
+    (item) => item.type === activeTab,
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <View style={styles.balanceContainer}>
-              <View style={styles.balanceHeader}>
-                <Text style={styles.balanceAmount}>Rs 23,220.00</Text>
-                <MaterialCommunityIcons
-                  name="eye-outline"
-                  size={24}
-                  color="#333"
-                />
-              </View>
-              <View style={styles.totalBalanceRow}>
-                <Text style={styles.totalBalanceText}>Total balance</Text>
-                <MaterialCommunityIcons
-                  name="information-outline"
-                  size={16}
-                  color="#666"
-                />
-              </View>
-            </View>
-
-            <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialCommunityIcons name="magnify" size={24} color="#333" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialCommunityIcons
-                  name="bell-outline"
-                  size={24}
-                  color="#333"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* My Wallets Card */}
-          <View style={styles.walletsCard}>
-            <View style={styles.walletHeader}>
-              <Text style={styles.walletTitle}>My Wallets</Text>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>See all</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.walletItem}>
-              <View style={styles.walletLeft}>
-                <View style={styles.walletIcon}>
-                  <MaterialCommunityIcons
-                    name="wallet"
-                    size={24}
-                    color="#fff"
-                  />
+        <FlatList
+          data={filteredTransactions}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <>
+              {/* HEADER */}
+              <View style={styles.header}>
+                <View style={styles.balanceContainer}>
+                  <View style={styles.balanceHeader}>
+                    <Text style={styles.balanceAmount}>Rs 23,220.00</Text>
+                    <MaterialCommunityIcons
+                      name="eye-outline"
+                      size={24}
+                      color="#333"
+                    />
+                  </View>
+                  <View style={styles.totalBalanceRow}>
+                    <Text style={styles.totalBalanceText}>Total balance</Text>
+                    <MaterialCommunityIcons
+                      name="information-outline"
+                      size={16}
+                      color="#666"
+                    />
+                  </View>
                 </View>
-                <Text style={styles.walletName}>Cash</Text>
+
+                <View style={styles.headerIcons}>
+                  <TouchableOpacity style={styles.iconButton}>
+                    <MaterialCommunityIcons
+                      name="magnify"
+                      size={24}
+                      color="#333"
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconButton}>
+                    <MaterialCommunityIcons
+                      name="bell-outline"
+                      size={24}
+                      color="#333"
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <Text style={styles.walletAmount}>-Rs 23,220.00</Text>
+
+              {/* My Wallets */}
+              <View style={styles.walletsCard}>
+                <View style={styles.walletHeader}>
+                  <Text style={styles.walletTitle}>My Wallets</Text>
+                  <TouchableOpacity>
+                    <Text style={styles.seeAllText}>See all</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.walletItem}>
+                  <View style={styles.walletLeft}>
+                    <View style={styles.walletIcon}>
+                      <MaterialCommunityIcons
+                        name="wallet"
+                        size={24}
+                        color="#fff"
+                      />
+                    </View>
+                    <Text style={styles.walletName}>Cash</Text>
+                  </View>
+                  <Text style={styles.walletAmount}>-Rs 23,220.00</Text>
+                </View>
+              </View>
+
+              {/* Recent Transactions Header */}
+              <View style={styles.transactionHeader}>
+                <Text style={styles.transactionTitle}>Recent Transactions</Text>
+              </View>
+
+              {/* Tabs */}
+              <View style={styles.tabContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.tabButton,
+                    activeTab === "income" && styles.activeTab,
+                  ]}
+                  onPress={() => setActiveTab("income")}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === "income" && styles.activeTabText,
+                    ]}
+                  >
+                    Income
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.tabButton,
+                    activeTab === "expense" && styles.activeTab,
+                  ]}
+                  onPress={() => setActiveTab("expense")}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === "expense" && styles.activeTabText,
+                    ]}
+                  >
+                    Expense
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.transactionItem}>
+              <View>
+                <Text style={styles.transactionName}>{item.title}</Text>
+                <Text style={styles.transactionDate}>{item.date}</Text>
+              </View>
+
+              <Text
+                style={[
+                  styles.transactionAmount,
+                  item.type === "income"
+                    ? styles.incomeText
+                    : styles.expenseText,
+                ]}
+              >
+                {item.type === "income" ? "+" : "-"} Rs {item.amount}
+              </Text>
             </View>
-          </View>
-        </ScrollView>
+          )}
+        />
       </SafeAreaView>
     </View>
   );
@@ -356,5 +462,83 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#fff",
     marginTop: 2,
+  },
+  transactionHeader: {
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+
+  transactionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+  },
+
+  tabContainer: {
+    flexDirection: "row",
+    marginHorizontal: 20,
+    marginBottom: 15,
+    backgroundColor: "#eee",
+    borderRadius: 12,
+    padding: 4,
+  },
+
+  tabButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  activeTab: {
+    backgroundColor: "#4CAF50",
+  },
+
+  tabText: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "500",
+  },
+
+  activeTabText: {
+    color: "#fff",
+  },
+
+  transactionItem: {
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    elevation: 1,
+  },
+
+  transactionName: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#333",
+  },
+
+  transactionDate: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 4,
+  },
+
+  transactionAmount: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  incomeText: {
+    color: "#4CAF50",
+  },
+
+  expenseText: {
+    color: "#FF5252",
   },
 });

@@ -5,12 +5,66 @@ import {
   TouchableOpacity,
   View,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 
 export default function Index() {
+  const [checkingLogin, setCheckingLogin] = useState(true);
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("user");
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+
+          // Call backend to validate
+          const response = await fetch(
+            "http://10.0.2.2:8080/spendwise/api/users/validate",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email: parsedUser.email }),
+            },
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.valid) {
+              router.replace("/(tabs)/home"); // User valid
+              return;
+            }
+          }
+
+          // If backend validation fails, remove local storage
+          await AsyncStorage.removeItem("user");
+        }
+      } catch (error) {
+        console.log("Error checking login:", error);
+      } finally {
+        setCheckingLogin(false);
+      }
+    };
+
+    checkLogin();
+  }, []);
+
+
+  if (checkingLogin) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <LinearGradient
       colors={["#e8edb6", "#c4d4ee", "#c4d4ee53", "#ffffff"]}
