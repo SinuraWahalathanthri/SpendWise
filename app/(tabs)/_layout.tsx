@@ -74,6 +74,19 @@ const AddTransactionButton = () => {
     return `${dayName}, ${formattedDate}`;
   };
 
+  const resetFields = () => {
+    setTransactionType("expense"); 
+    setAmount("0");
+    setSelectedDate(new Date());
+    setWallet("Cash");
+    setCategory(null);
+    setNote(""); 
+
+    setWalletDropdownVisible(false);
+    setCategoryDropdownVisible(false);
+    setShowDatePicker(false);
+  };
+
   const saveTransaction = async () => {
     const userData = await AsyncStorage.getItem("user");
     if (!userData) return;
@@ -97,6 +110,7 @@ const AddTransactionButton = () => {
       .then((res) => res.json())
       .then((data) => {
         console.log("Transaction saved:", data);
+        resetFields(); //<- used to reset all the fields after saving
         setModalVisible(false);
       })
       .catch((err) => console.error(err));
