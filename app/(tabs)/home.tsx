@@ -11,8 +11,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { closeConnection, connectWebSocket } from "@/services/socketServices";
+import { useTheme } from "@/hooks/useTheme";
 
 const Home = () => {
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("income");
   const [balances, setBalances] = useState({ totalBalance: 0, wallets: {} });
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
@@ -70,7 +72,6 @@ const Home = () => {
 
       const user = JSON.parse(userData);
 
-      // load balance visibility preference
       const visibility = await AsyncStorage.getItem("balanceVisible");
 
       if (visibility !== null) {
@@ -116,9 +117,196 @@ const Home = () => {
     await AsyncStorage.setItem("balanceVisible", JSON.stringify(newValue));
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      paddingHorizontal: 20,
+      paddingTop: 10,
+      paddingBottom: 20,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+    },
+    balanceContainer: {
+      flex: 1,
+    },
+    balanceHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    balanceAmount: {
+      fontSize: 32,
+      fontWeight: "bold",
+      color: theme.text,
+    },
+    totalBalanceRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 4,
+    },
+    totalBalanceText: {
+      fontSize: 14,
+      color: theme.textSecondary,
+    },
+    headerIcons: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    iconButton: {
+      padding: 4,
+    },
+    walletsCard: {
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 16,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    walletHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    walletTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: theme.text,
+    },
+    seeAllText: {
+      fontSize: 14,
+      color: theme.primary,
+      fontWeight: "500",
+    },
+    walletItem: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: theme.inputBackground,
+      padding: 16,
+      borderRadius: 12,
+    },
+    walletLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    walletIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      backgroundColor: "#FF9800",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    walletName: {
+      fontSize: 16,
+      fontWeight: "500",
+      color: theme.text,
+    },
+    walletAmount: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: theme.text,
+    },
+    transactionHeader: {
+      paddingHorizontal: 20,
+      marginTop: 10,
+      marginBottom: 10,
+    },
+    transactionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: theme.text,
+    },
+    tabContainer: {
+      flexDirection: "row",
+      marginHorizontal: 20,
+      marginBottom: 15,
+      backgroundColor: theme.inputBackground,
+      borderRadius: 12,
+      padding: 4,
+    },
+    tabButton: {
+      flex: 1,
+      paddingVertical: 8,
+      borderRadius: 10,
+      alignItems: "center",
+    },
+    activeTab: {
+      backgroundColor: theme.primary,
+    },
+    tabText: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      fontWeight: "500",
+    },
+    activeTabText: {
+      color: theme.white,
+    },
+    transactionItem: {
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      elevation: 1,
+    },
+    transactionName: {
+      fontSize: 15,
+      fontWeight: "500",
+      color: theme.text,
+    },
+    transactionDate: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginTop: 4,
+    },
+    transactionAmount: {
+      fontSize: 15,
+      fontWeight: "600",
+    },
+    incomeText: {
+      color: "#4CAF50",
+    },
+    expenseText: {
+      color: "#FF5252",
+    },
+    emptyContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 50,
+      paddingHorizontal: 20,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: theme.textSecondary,
+      marginTop: 10,
+    },
+    emptySubtitle: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginTop: 5,
+      textAlign: "center",
+    },
+  });
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
+    <View style={styles.container}>
       <SafeAreaView style={{ flex: 1 }}>
         <FlatList
           data={filteredTransactions}
@@ -126,7 +314,6 @@ const Home = () => {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <>
-              {/* HEADER */}
               <View style={styles.header}>
                 <View style={styles.balanceContainer}>
                   <View style={styles.balanceHeader}>
@@ -141,7 +328,7 @@ const Home = () => {
                           isBalanceVisible ? "eye-outline" : "eye-off-outline"
                         }
                         size={24}
-                        color="#333"
+                        color={theme.text}
                       />
                     </TouchableOpacity>
                   </View>
@@ -150,7 +337,7 @@ const Home = () => {
                     <MaterialCommunityIcons
                       name="information-outline"
                       size={16}
-                      color="#666"
+                      color={theme.textSecondary}
                     />
                   </View>
                 </View>
@@ -160,29 +347,24 @@ const Home = () => {
                     <MaterialCommunityIcons
                       name="magnify"
                       size={24}
-                      color="#333"
+                      color={theme.text}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.iconButton}>
                     <MaterialCommunityIcons
                       name="bell-outline"
                       size={24}
-                      color="#333"
+                      color={theme.text}
                     />
                   </TouchableOpacity>
                 </View>
               </View>
 
-              {/* My Wallets */}
               <View style={styles.walletsCard}>
                 <View style={styles.walletHeader}>
                   <Text style={styles.walletTitle}>My Wallets</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.seeAllText}>See all</Text>
-                  </TouchableOpacity>
                 </View>
 
-                {/* Cash Wallet */}
                 <View style={styles.walletItem}>
                   <View style={styles.walletLeft}>
                     <View style={styles.walletIcon}>
@@ -199,7 +381,6 @@ const Home = () => {
                   </Text>
                 </View>
 
-                {/* Card Wallet */}
                 <View style={[styles.walletItem, { marginTop: 10 }]}>
                   <View style={styles.walletLeft}>
                     <View style={styles.walletIcon}>
@@ -217,12 +398,10 @@ const Home = () => {
                 </View>
               </View>
 
-              {/* Recent Transactions Header */}
               <View style={styles.transactionHeader}>
                 <Text style={styles.transactionTitle}>Recent Transactions</Text>
               </View>
 
-              {/* Tabs */}
               <View style={styles.tabContainer}>
                 <TouchableOpacity
                   style={[
@@ -285,7 +464,7 @@ const Home = () => {
               <MaterialCommunityIcons
                 name="file-document-outline"
                 size={60}
-                color="#ccc"
+                color={theme.textSecondary}
               />
 
               <Text style={styles.emptyTitle}>No transaction history</Text>
@@ -302,382 +481,3 @@ const Home = () => {
 };
 
 export default Home;
-
-const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  balanceContainer: {
-    flex: 1,
-  },
-  balanceHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  balanceAmount: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  totalBalanceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 4,
-  },
-  totalBalanceText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  headerIcons: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  iconButton: {
-    padding: 4,
-  },
-  walletsCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  walletHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  walletTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-  },
-  seeAllText: {
-    fontSize: 14,
-    color: "#4CAF50",
-    fontWeight: "500",
-  },
-  walletItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#f8f8f8",
-    padding: 16,
-    borderRadius: 12,
-  },
-  walletLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  walletIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: "#FF9800",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  walletName: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#333",
-  },
-  walletAmount: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-  trialCard: {
-    backgroundColor: "#4CAF50",
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    overflow: "hidden",
-  },
-  trialContent: {
-    flex: 1,
-  },
-  trialTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 4,
-  },
-  trialSubtitle: {
-    fontSize: 14,
-    color: "#fff",
-    opacity: 0.9,
-    marginBottom: 12,
-  },
-  trialButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#fff",
-    alignSelf: "flex-start",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  trialButtonText: {
-    fontSize: 13,
-    color: "#4CAF50",
-    fontWeight: "500",
-  },
-  trialTimer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginLeft: 8,
-  },
-  trialTimerText: {
-    fontSize: 12,
-    color: "#4CAF50",
-  },
-  trialIllustration: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 10,
-  },
-  reportHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  reportTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#666",
-  },
-  seeReportsText: {
-    fontSize: 14,
-    color: "#4CAF50",
-    fontWeight: "500",
-  },
-  reportCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  statsRow: {
-    flexDirection: "row",
-    marginBottom: 24,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: "center",
-  },
-  statLabel: {
-    fontSize: 13,
-    color: "#666",
-    marginBottom: 8,
-  },
-  statAmountRed: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#FF5252",
-  },
-  statAmountBlue: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2196F3",
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: "#e0e0e0",
-    marginHorizontal: 16,
-  },
-  chartContainer: {
-    flexDirection: "row",
-    height: 200,
-  },
-  chartYAxis: {
-    justifyContent: "space-between",
-    paddingRight: 12,
-    paddingVertical: 10,
-  },
-  axisLabel: {
-    fontSize: 11,
-    color: "#999",
-  },
-  chartArea: {
-    flex: 1,
-    position: "relative",
-  },
-  chartGrid: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderLeftWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  barContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    paddingBottom: 20,
-  },
-  bar: {
-    width: 40,
-    height: 160,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  barFill: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "100%",
-    backgroundColor: "#FF5252",
-    borderRadius: 4,
-  },
-  chartTooltip: {
-    position: "absolute",
-    top: -60,
-    backgroundColor: "#666",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  tooltipAmount: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  tooltipDate: {
-    fontSize: 11,
-    color: "#fff",
-    marginTop: 2,
-  },
-  transactionHeader: {
-    paddingHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-
-  transactionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-  },
-
-  tabContainer: {
-    flexDirection: "row",
-    marginHorizontal: 20,
-    marginBottom: 15,
-    backgroundColor: "#eee",
-    borderRadius: 12,
-    padding: 4,
-  },
-
-  tabButton: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-
-  activeTab: {
-    backgroundColor: "#4CAF50",
-  },
-
-  tabText: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-
-  activeTabText: {
-    color: "#fff",
-  },
-
-  transactionItem: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    elevation: 1,
-  },
-
-  transactionName: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#333",
-  },
-
-  transactionDate: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 4,
-  },
-
-  transactionAmount: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-
-  incomeText: {
-    color: "#4CAF50",
-  },
-
-  expenseText: {
-    color: "#FF5252",
-  },
-
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 50,
-    paddingHorizontal: 20,
-  },
-
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#666",
-    marginTop: 10,
-  },
-
-  emptySubtitle: {
-    fontSize: 14,
-    color: "#999",
-    marginTop: 5,
-    textAlign: "center",
-  },
-});

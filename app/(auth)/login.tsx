@@ -24,12 +24,10 @@ const Login = () => {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
-  // Check if user is already logged in
   useEffect(() => {
     const checkLogin = async () => {
       const userData = await AsyncStorage.getItem("user");
       if (userData) {
-        // If user data exists, redirect to home
         router.replace("/(tabs)/home");
       }
     };
@@ -57,7 +55,6 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Save user info to AsyncStorage
         await AsyncStorage.setItem("user", JSON.stringify(data));
         Alert.alert("Success", "Logged in successfully!");
         router.replace("/(tabs)/home");
@@ -89,6 +86,7 @@ const Login = () => {
             contentContainerStyle={{ flex: 1, paddingBottom: 50 }}
             showsVerticalScrollIndicator={false}
           >
+            {/* Title section */}
             <View style={{ marginTop: "auto" }}>
               <MaterialIcons
                 name="money"
@@ -105,7 +103,10 @@ const Login = () => {
               </Text>
             </View>
 
+            {/* Form */}
+
             <View style={{ marginTop: 25 }}>
+              {/* Email Input */}
               <View style={styles.inputContainer}>
                 <View
                   style={[
@@ -130,7 +131,7 @@ const Login = () => {
                   />
                 </View>
               </View>
-
+              {/* Password Input */}
               <View style={styles.passwordContainer}>
                 <View
                   style={[
@@ -164,6 +165,7 @@ const Login = () => {
               </View>
             </View>
 
+            {/* Sign In Button */}
             <TouchableOpacity style={styles.createButton} onPress={handleLogin}>
               <Text style={styles.createText}>Sign In</Text>
             </TouchableOpacity>

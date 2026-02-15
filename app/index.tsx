@@ -23,7 +23,6 @@ export default function Index() {
         if (userData) {
           const parsedUser = JSON.parse(userData);
 
-          // Call backend to validate
           const response = await fetch(
             "http://10.0.2.2:8080/spendwise/api/users/validate",
             {
@@ -38,12 +37,11 @@ export default function Index() {
           if (response.ok) {
             const result = await response.json();
             if (result.valid) {
-              router.replace("/(tabs)/home"); // User valid
+              router.replace("/(tabs)/home");
               return;
             }
           }
 
-          // If backend validation fails, remove local storage
           await AsyncStorage.removeItem("user");
         }
       } catch (error) {

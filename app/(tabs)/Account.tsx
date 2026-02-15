@@ -11,35 +11,26 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "@/hooks/useTheme";
 
 const Account = () => {
+  const { theme, isDarkMode, toggleTheme } = useTheme();
   const [user, setUser] = useState({
     name: "",
     email: "",
   });
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Load user
         const userData = await AsyncStorage.getItem("user");
 
         if (userData) {
           const parsedUser = JSON.parse(userData);
-
           setUser({
             name: parsedUser.name,
             email: parsedUser.email,
           });
-        }
-
-        // Load dark mode preference
-        const darkModeValue = await AsyncStorage.getItem("darkMode");
-
-        if (darkModeValue !== null) {
-          setIsDarkMode(JSON.parse(darkModeValue));
         }
       } catch (error) {
         console.error("Failed to load data", error);
@@ -49,23 +40,9 @@ const Account = () => {
     loadData();
   }, []);
 
-  const toggleDarkMode = async (value) => {
-    try {
-      setIsDarkMode(value);
-
-      await AsyncStorage.setItem("darkMode", JSON.stringify(value));
-    } catch (error) {
-      console.error("Failed to save dark mode", error);
-    }
-  };
-
-
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("user");
-
-      // optional: clear everything
-      // await AsyncStorage.clear();
 
       router.replace("/login");
     } catch (error) {
@@ -73,15 +50,124 @@ const Account = () => {
     }
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: theme.text,
+      marginTop: 20,
+      marginBottom: 20,
+      paddingHorizontal: 20,
+    },
+    profileCard: {
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      padding: 20,
+      borderRadius: 16,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 20,
+      elevation: 2,
+    },
+    profileLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 15,
+    },
+    avatar: {
+      width: 55,
+      height: 55,
+      borderRadius: 14,
+      backgroundColor: theme.primary,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    profileName: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: theme.text,
+    },
+    profileEmail: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginTop: 4,
+    },
+    card: {
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      borderRadius: 16,
+      paddingVertical: 10,
+      marginBottom: 20,
+      elevation: 2,
+    },
+    cardTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: theme.textSecondary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+    },
+    item: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+    },
+    itemLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+    },
+    itemText: {
+      fontSize: 15,
+      color: theme.text,
+      fontWeight: "500",
+    },
+    logoutButton: {
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      padding: 16,
+      borderRadius: 16,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 40,
+    },
+    logoutText: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: "#FF5252",
+    },
+  });
+
+  const AccountItem = ({ icon, title }: { icon: string; title: string }) => (
+    <TouchableOpacity style={styles.item}>
+      <View style={styles.itemLeft}>
+        <MaterialCommunityIcons name={icon} size={22} color={theme.primary} />
+        <Text style={styles.itemText}>{title}</Text>
+      </View>
+
+      <MaterialCommunityIcons
+        name="chevron-right"
+        size={22}
+        color={theme.textSecondary}
+      />
+    </TouchableOpacity>
+  );
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
+    <View style={styles.container}>
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Page Title */}
           <Text style={styles.title}>Account</Text>
 
-          {/* Profile Card */}
           <View style={styles.profileCard}>
             <View style={styles.profileLeft}>
               <View style={styles.avatar}>
@@ -97,7 +183,6 @@ const Account = () => {
             </View>
           </View>
 
-          {/* Account Settings */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Account Settings</Text>
 
@@ -106,7 +191,6 @@ const Account = () => {
             <AccountItem icon="chart-box-outline" title="Reports" />
           </View>
 
-          {/* Preferences */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Preferences</Text>
 
@@ -116,15 +200,15 @@ const Account = () => {
                 <MaterialCommunityIcons
                   name="theme-light-dark"
                   size={22}
-                  color="#4CAF50"
+                  color={theme.primary}
                 />
                 <Text style={styles.itemText}>Dark Mode</Text>
               </View>
 
               <Switch
                 value={isDarkMode}
-                onValueChange={toggleDarkMode}
-                trackColor={{ false: "#ccc", true: "#4CAF50" }}
+                onValueChange={toggleTheme}
+                trackColor={{ false: "#ccc", true: theme.primary }}
                 thumbColor="#fff"
               />
             </View>
@@ -132,7 +216,6 @@ const Account = () => {
             <AccountItem icon="currency-usd" title="Currency" />
           </View>
 
-          {/* Security */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Security</Text>
 
@@ -140,7 +223,6 @@ const Account = () => {
             <AccountItem icon="fingerprint" title="Biometric Login" />
           </View>
 
-          {/* Logout Button */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <MaterialCommunityIcons name="logout" size={20} color="#FF5252" />
             <Text style={styles.logoutText}>Logout</Text>
@@ -151,120 +233,4 @@ const Account = () => {
   );
 };
 
-const AccountItem = ({ icon, title }) => (
-  <TouchableOpacity style={styles.item}>
-    <View style={styles.itemLeft}>
-      <MaterialCommunityIcons name={icon} size={22} color="#4CAF50" />
-      <Text style={styles.itemText}>{title}</Text>
-    </View>
-
-    <MaterialCommunityIcons name="chevron-right" size={22} color="#bbb" />
-  </TouchableOpacity>
-);
-
 export default Account;
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 20,
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-
-  profileCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    padding: 20,
-    borderRadius: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    elevation: 2,
-  },
-
-  profileLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
-  },
-
-  avatar: {
-    width: 55,
-    height: 55,
-    borderRadius: 14,
-    backgroundColor: "#4CAF50",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  profileName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-
-  profileEmail: {
-    fontSize: 13,
-    color: "#777",
-    marginTop: 4,
-  },
-
-  card: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    borderRadius: 16,
-    paddingVertical: 10,
-    marginBottom: 20,
-    elevation: 2,
-  },
-
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-
-  item: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-  },
-
-  itemLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-
-  itemText: {
-    fontSize: 15,
-    color: "#333",
-    fontWeight: "500",
-  },
-
-  logoutButton: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    padding: 16,
-    borderRadius: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 40,
-  },
-
-  logoutText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FF5252",
-  },
-});

@@ -10,8 +10,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { closeConnection, connectWebSocket } from "@/services/socketServices";
+import { useTheme } from "@/hooks/useTheme";
 
 const Transactions = () => {
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("income");
   const [transactions, setTransactions] = useState<any[]>([]);
 
@@ -57,10 +59,8 @@ const Transactions = () => {
         const user = JSON.parse(userData);
         userId = user.id;
 
-        // initial fetch
         await fetchTransactions(userId);
 
-        // connect websocket
         connectWebSocket(userId, (data) => {
           if (data.type === "update") {
             const formatted = data.transactions.map((item: any) => ({
@@ -89,8 +89,97 @@ const Transactions = () => {
     };
   }, []);
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: theme.text,
+      marginHorizontal: 20,
+      marginTop: 20,
+      marginBottom: 15,
+    },
+    tabContainer: {
+      flexDirection: "row",
+      marginHorizontal: 20,
+      marginBottom: 15,
+      backgroundColor: theme.inputBackground,
+      borderRadius: 12,
+      padding: 4,
+    },
+    tabButton: {
+      flex: 1,
+      paddingVertical: 8,
+      borderRadius: 10,
+      alignItems: "center",
+    },
+    activeTab: {
+      backgroundColor: theme.primary,
+    },
+    tabText: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      fontWeight: "500",
+    },
+    activeTabText: {
+      color: theme.white,
+    },
+    transactionItem: {
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      elevation: 1,
+    },
+    transactionName: {
+      fontSize: 15,
+      fontWeight: "500",
+      color: theme.text,
+    },
+    transactionDate: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginTop: 4,
+    },
+    transactionAmount: {
+      fontSize: 15,
+      fontWeight: "600",
+    },
+    incomeText: {
+      color: "#4CAF50",
+    },
+    expenseText: {
+      color: "#FF5252",
+    },
+    emptyContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 50,
+      paddingHorizontal: 20,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: theme.textSecondary,
+      marginTop: 10,
+    },
+    emptySubtitle: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginTop: 5,
+      textAlign: "center",
+    },
+  });
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
+    <View style={styles.container}>
       <SafeAreaView style={{ flex: 1 }}>
         <FlatList
           data={filteredTransactions}
@@ -98,10 +187,8 @@ const Transactions = () => {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <>
-              {/* Title */}
               <Text style={styles.title}>Transactions</Text>
 
-              {/* Tabs */}
               <View style={styles.tabContainer}>
                 <TouchableOpacity
                   style={[
@@ -164,7 +251,7 @@ const Transactions = () => {
               <MaterialCommunityIcons
                 name="file-document-outline"
                 size={60}
-                color="#ccc"
+                color={theme.textSecondary}
               />
 
               <Text style={styles.emptyTitle}>No transaction history</Text>
@@ -181,107 +268,3 @@ const Transactions = () => {
 };
 
 export default Transactions;
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 15,
-  },
-
-  tabContainer: {
-    flexDirection: "row",
-    marginHorizontal: 20,
-    marginBottom: 15,
-    backgroundColor: "#eee",
-    borderRadius: 12,
-    padding: 4,
-  },
-
-  tabButton: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-
-  activeTab: {
-    backgroundColor: "#4CAF50",
-  },
-
-  tabText: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-
-  activeTabText: {
-    color: "#fff",
-  },
-
-  transactionItem: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    elevation: 1,
-  },
-
-  transactionName: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#333",
-  },
-
-  transactionDate: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 4,
-  },
-
-  transactionAmount: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-
-  incomeText: {
-    color: "#4CAF50",
-  },
-
-  expenseText: {
-    color: "#FF5252",
-  },
-
-  emptyText: {
-    textAlign: "center",
-    marginTop: 40,
-    color: "#999",
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 50,
-    paddingHorizontal: 20,
-  },
-
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#666",
-    marginTop: 10,
-  },
-
-  emptySubtitle: {
-    fontSize: 14,
-    color: "#999",
-    marginTop: 5,
-    textAlign: "center",
-  },
-});

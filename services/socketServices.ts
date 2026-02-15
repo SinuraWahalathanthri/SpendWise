@@ -4,7 +4,7 @@ export const connectWebSocket = (
   userId: number,
   onMessage: (data: any) => void,
 ): void => {
-  socket = new WebSocket(`ws://10.0.2.2:8080/spendwise/ws/balance/${userId}`);
+  socket = new WebSocket(`ws://10.0.2.2:8080/spendwise/ws/events/${userId}`);
 
   socket.onopen = () => {
     console.log("WebSocket connected");

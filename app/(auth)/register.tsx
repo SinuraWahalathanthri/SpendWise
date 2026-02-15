@@ -1,5 +1,4 @@
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,36 +13,27 @@ import {
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { Link, router, Stack, useNavigation } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { StackScreen } from "react-native-screens";
-// import { useAuth } from "@/context/AuthContext";
-
-type Student = {
-  id: string;
-  name?: string;
-  email?: string;
-  status?: string;
-  password?: string;
-  nic?: string;
-  otpExpiry?: { toDate: () => Date };
-};
+import { router, Stack } from "expo-router";
 
 const Register = () => {
+  // These store the user input parameters
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Used to toggle password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Used to highlight the input fields
   const [nameFocused, setNameFocused] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
 
   const handleRegister = async () => {
+    // Validations - Start
     if (!name || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill all fields");
       return;
@@ -53,6 +43,7 @@ const Register = () => {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
+    // Validations - End
 
     try {
       const response = await fetch("http://10.0.2.2:8080/spendwise/api/users", {
@@ -68,13 +59,14 @@ const Register = () => {
 
       let data;
       try {
-        data = JSON.parse(text); // try parse JSON
+        data = JSON.parse(text);
       } catch {
-        data = { message: text }; // fallback
+        data = { message: text };
       }
 
       if (response.status === 201) {
         Alert.alert("Success", "Account created successfully!");
+        // After successful registration, navigate to the login screen
         router.replace("/(auth)/login");
       } else {
         Alert.alert("Error", data.message || "Registration failed");
@@ -83,7 +75,6 @@ const Register = () => {
       console.log(error);
       Alert.alert("Error", "Cannot connect to server");
     }
-
   };
 
   return (
@@ -105,6 +96,7 @@ const Register = () => {
             contentContainerStyle={{ flex: 1, paddingBottom: 50 }}
             showsVerticalScrollIndicator={false}
           >
+            {/* Content */}
             <View style={{ marginTop: "auto" }}>
               <MaterialIcons
                 name="money"
@@ -122,6 +114,7 @@ const Register = () => {
             </View>
 
             <View style={{ marginTop: 25 }}>
+              {/* Name Field */}
               <View style={styles.inputContainer}>
                 <View
                   style={[
@@ -146,6 +139,7 @@ const Register = () => {
                 </View>
               </View>
 
+              {/* Email Field */}
               <View style={styles.inputContainer}>
                 <View
                   style={[
@@ -170,6 +164,7 @@ const Register = () => {
                 </View>
               </View>
 
+              {/* Password Fields */}
               <View style={styles.passwordContainer}>
                 <View
                   style={[
@@ -204,6 +199,7 @@ const Register = () => {
                 </View>
               </View>
 
+              {/* Confirm Password Fields */}
               <View style={styles.passwordContainer}>
                 <View
                   style={[

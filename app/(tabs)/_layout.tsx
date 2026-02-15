@@ -14,15 +14,16 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTheme } from "@/hooks/useTheme";
 
 const AddTransactionButton = () => {
+  const { theme } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
-  const [transactionType, setTransactionType] = useState<
-    "expense" | "income"
-  >("expense");
+  const [transactionType, setTransactionType] = useState<"expense" | "income">(
+    "expense",
+  );
   const [amount, setAmount] = useState("0");
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -36,7 +37,6 @@ const AddTransactionButton = () => {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-
   const categories = [
     { name: "Food", icon: "silverware-fork-knife", color: "#FF5722" },
     { name: "Transport", icon: "car", color: "#2196F3" },
@@ -44,8 +44,6 @@ const AddTransactionButton = () => {
     { name: "Bills", icon: "file-document", color: "#FF9800" },
     { name: "Salary", icon: "cash", color: "#4CAF50" },
   ];
-
-
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -79,7 +77,7 @@ const AddTransactionButton = () => {
   const saveTransaction = async () => {
     const userData = await AsyncStorage.getItem("user");
     if (!userData) return;
-    
+
     const user = JSON.parse(userData);
     const payload = {
       transactionType,
@@ -104,6 +102,207 @@ const AddTransactionButton = () => {
       .catch((err) => console.error(err));
   };
 
+  const styles = StyleSheet.create({
+    addButton: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.primary,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: -20,
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "flex-end",
+    },
+    bottomSheet: {
+      backgroundColor: theme.card,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 40,
+      maxHeight: "90%",
+    },
+    sheetHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 24,
+    },
+    cancelText: {
+      fontSize: 16,
+      color: theme.primary,
+      width: 60,
+    },
+    sheetTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: theme.text,
+    },
+    typeSelector: {
+      flexDirection: "row",
+      backgroundColor: theme.inputBackground,
+      borderRadius: 12,
+      padding: 4,
+      marginBottom: 20,
+    },
+    typeButtonActive: {
+      backgroundColor: theme.background,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    typeButtonText: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      fontWeight: "500",
+    },
+    typeButtonTextActive: {
+      color: theme.text,
+    },
+    typeButton: {
+      flex: 1,
+      paddingVertical: 12,
+      alignItems: "center",
+      borderRadius: 8,
+    },
+    inputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      gap: 12,
+    },
+    inputLabel: {
+      flex: 1,
+      fontSize: 16,
+      color: theme.text,
+    },
+    walletIconSmall: {
+      width: 32,
+      height: 32,
+      borderRadius: 8,
+      backgroundColor: "#FF9800",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    amountContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      gap: 12,
+    },
+    currencyLabel: {
+      fontSize: 16,
+      color: theme.text,
+      backgroundColor: theme.inputBackground,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 8,
+      fontWeight: "500",
+    },
+    amountInput: {
+      flex: 1,
+      fontSize: 32,
+      color: theme.text,
+      fontWeight: "300",
+    },
+    categoryIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: theme.inputBackground,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    placeholderText: {
+      flex: 1,
+      fontSize: 16,
+      color: theme.textSecondary,
+    },
+    dateContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      gap: 12,
+    },
+    dateSelector: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: theme.inputBackground,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    dateText: {
+      fontSize: 14,
+      color: theme.primary,
+      fontWeight: "500",
+    },
+    saveButton: {
+      backgroundColor: theme.primary,
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: "center",
+      marginTop: 20,
+    },
+    saveButtonText: {
+      fontSize: 16,
+      color: theme.white,
+      fontWeight: "600",
+    },
+    dropdown: {
+      backgroundColor: theme.inputBackground,
+      borderRadius: 12,
+      marginTop: 6,
+      marginBottom: 10,
+      overflow: "hidden",
+    },
+    dropdownItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      padding: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    dropdownText: {
+      fontSize: 16,
+      color: theme.text,
+    },
+    noteContainer: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 12,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    noteInput: {
+      flex: 1,
+      fontSize: 16,
+      color: theme.text,
+      minHeight: 60,
+      textAlignVertical: "top",
+    },
+  });
 
   return (
     <>
@@ -126,7 +325,6 @@ const AddTransactionButton = () => {
             style={styles.bottomSheet}
             onPress={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <View style={styles.sheetHeader}>
               <TouchableOpacity onPress={handleCloseModal}>
                 <Text style={styles.cancelText}>Cancel</Text>
@@ -136,7 +334,6 @@ const AddTransactionButton = () => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Transaction Type Selector */}
               <View style={styles.typeSelector}>
                 <TouchableOpacity
                   style={[
@@ -174,8 +371,6 @@ const AddTransactionButton = () => {
                 </TouchableOpacity>
               </View>
 
-              {/* Wallet Selection */}
-              {/* Wallet Selection */}
               <View>
                 <TouchableOpacity
                   style={styles.inputRow}
@@ -196,7 +391,7 @@ const AddTransactionButton = () => {
                   <MaterialCommunityIcons
                     name={walletDropdownVisible ? "chevron-up" : "chevron-down"}
                     size={24}
-                    color="#999"
+                    color={theme.textSecondary}
                   />
                 </TouchableOpacity>
 
@@ -214,7 +409,7 @@ const AddTransactionButton = () => {
                         <MaterialCommunityIcons
                           name={item === "Cash" ? "cash" : "credit-card"}
                           size={20}
-                          color="#4CAF50"
+                          color={theme.primary}
                         />
 
                         <Text style={styles.dropdownText}>{item}</Text>
@@ -224,7 +419,6 @@ const AddTransactionButton = () => {
                 )}
               </View>
 
-              {/* Amount Input */}
               <View style={styles.amountContainer}>
                 <Text style={styles.currencyLabel}>LKR</Text>
                 <TextInput
@@ -233,12 +427,10 @@ const AddTransactionButton = () => {
                   onChangeText={setAmount}
                   keyboardType="numeric"
                   placeholder="0"
-                  placeholderTextColor="#666"
+                  placeholderTextColor={theme.textSecondary}
                 />
               </View>
 
-              {/* Category Selection */}
-              {/* Category Selection */}
               <View>
                 <TouchableOpacity
                   style={styles.inputRow}
@@ -250,7 +442,9 @@ const AddTransactionButton = () => {
                     style={[
                       styles.categoryIcon,
                       {
-                        backgroundColor: category ? category.color : "#F3F4F6",
+                        backgroundColor: category
+                          ? category.color
+                          : theme.inputBackground,
                       },
                     ]}
                   >
@@ -276,7 +470,7 @@ const AddTransactionButton = () => {
                       categoryDropdownVisible ? "chevron-up" : "chevron-down"
                     }
                     size={24}
-                    color="#999"
+                    color={theme.textSecondary}
                   />
                 </TouchableOpacity>
 
@@ -311,26 +505,23 @@ const AddTransactionButton = () => {
                 )}
               </View>
 
-              {/* Note */}
               <View style={styles.noteContainer}>
                 <MaterialCommunityIcons
                   name="text-box-outline"
                   size={22}
-                  color="#666"
+                  color={theme.textSecondary}
                 />
 
                 <TextInput
                   style={styles.noteInput}
                   placeholder="Add note..."
-                  placeholderTextColor="#999"
+                  placeholderTextColor={theme.textSecondary}
                   value={note}
                   onChangeText={setNote}
                   multiline
                 />
               </View>
 
-              {/* Date Selector */}
-              {/* Date Selector */}
               <TouchableOpacity
                 style={styles.dateContainer}
                 onPress={() => setShowDatePicker(true)}
@@ -338,7 +529,7 @@ const AddTransactionButton = () => {
                 <MaterialCommunityIcons
                   name="calendar-blank"
                   size={24}
-                  color="#666"
+                  color={theme.textSecondary}
                 />
 
                 <View style={styles.dateSelector}>
@@ -349,7 +540,7 @@ const AddTransactionButton = () => {
                   <MaterialCommunityIcons
                     name="chevron-down"
                     size={22}
-                    color="#999"
+                    color={theme.textSecondary}
                   />
                 </View>
               </TouchableOpacity>
@@ -366,8 +557,10 @@ const AddTransactionButton = () => {
                 />
               )}
 
-              {/* Save Button */}
-              <TouchableOpacity style={styles.saveButton} onPress={saveTransaction}>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={saveTransaction}
+              >
                 <Text style={styles.saveButtonText}>Save</Text>
               </TouchableOpacity>
             </ScrollView>
@@ -380,21 +573,22 @@ const AddTransactionButton = () => {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { theme } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#4CAF50",
-        tabBarInactiveTintColor: "#999",
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
           height: 70,
           paddingBottom: 10,
           paddingTop: 10,
-          backgroundColor: "#fff",
+          backgroundColor: theme.card,
           borderTopWidth: 1,
-          borderTopColor: "#f0f0f0",
+          borderTopColor: theme.border,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -474,236 +668,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  addButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#4CAF50",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: -20,
-    shadowColor: "#4CAF50",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  bottomSheet: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    maxHeight: "90%",
-  },
-
-  sheetHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  cancelText: {
-    fontSize: 16,
-    color: "#4CAF50",
-    width: 60,
-  },
-
-  sheetTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111",
-  },
-  typeSelector: {
-    flexDirection: "row",
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 20,
-  },
-
-  typeButtonActive: {
-    backgroundColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-
-  typeButtonText: {
-    fontSize: 14,
-    color: "#777",
-    fontWeight: "500",
-  },
-
-  typeButtonTextActive: {
-    color: "#111",
-  },
-
-  typeButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderRadius: 8,
-  },
-
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEEEEE",
-    gap: 12,
-  },
-
-  inputLabel: {
-    flex: 1,
-    fontSize: 16,
-    color: "#111",
-  },
-
-  walletIconSmall: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: "#FF9800",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  amountContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEEEEE",
-    gap: 12,
-  },
-
-  currencyLabel: {
-    fontSize: 16,
-    color: "#111",
-    backgroundColor: "#F3F4F6",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    fontWeight: "500",
-  },
-
-  amountInput: {
-    flex: 1,
-    fontSize: 32,
-    color: "#111",
-    fontWeight: "300",
-  },
-
-  categoryIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#F3F4F6",
-    alignItems:"center",
-    justifyContent:"center"
-  },
-
-  placeholderText: {
-    flex: 1,
-    fontSize: 16,
-    color: "#999",
-  },
-
-  dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEEEEE",
-    gap: 12,
-  },
-
-  dateSelector: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#F3F4F6",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-
-  dateText: {
-    fontSize: 14,
-    color: "#4CAF50",
-    fontWeight: "500",
-  },
-  addMoreButton: {
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  addMoreText: {
-    fontSize: 16,
-    color: "#4CAF50",
-    fontWeight: "500",
-  },
-
-  saveButton: {
-    backgroundColor: "#4CAF50",
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 20,
-  },
-
-  saveButtonText: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  dropdown: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: 12,
-    marginTop: 6,
-    marginBottom: 10,
-    overflow: "hidden",
-  },
-
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-
-  dropdownText: {
-    fontSize: 16,
-    color: "#111",
-  },
-
-  noteContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEEEEE",
-  },
-
-  noteInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#111",
-    minHeight: 60,
-    textAlignVertical: "top",
-  },
-});

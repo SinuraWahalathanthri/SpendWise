@@ -1,11 +1,18 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Stack } from 'expo-router'
+import { Stack } from "expo-router";
+import { useContext } from "react";
+import { ThemeContext } from "@/context/ThemeContext";
 
 const AuthLayout = () => {
-  return (
-    <Stack />
-  )
-}
+  const { theme } = useContext(ThemeContext);
 
-export default AuthLayout
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: theme.background },
+      }}
+    />
+  );
+};
+
+export default AuthLayout;
